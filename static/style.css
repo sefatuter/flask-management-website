@@ -1,0 +1,80 @@
+body {
+    background-image: url('./ffc.png');
+    background-size: cover;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    color: #fff;
+}
+
+.container {
+    max-width: 900px;
+    margin: 50px auto;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.header h1 {
+    font-size: 2.5em;
+    margin-bottom: 20px;
+}
+
+.button-group {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.button-group .btn {
+    font-size: 1.2em;
+}
+
+.content {
+    margin-top: 20px;
+}
+
+.card {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.table th, .table td {
+    color: #000000;
+}
+
+h2 {
+    margin-bottom: 20px;
+}
+
+form .form-control {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+}
+
+form .form-control:focus {
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+}
+
+form label {
+    font-weight: bold;
+}
+
+button[type="submit"] {
+    background-color: #5cb85c;
+    color: #000000;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+button[type="submit"]:hover {
+    background-color: #4cae4c;
+}
