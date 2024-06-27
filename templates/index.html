@@ -1,76 +1,24 @@
-{% extends 'base.html' %} {% block content %}
+{% extends 'base.html' %}
 
-<section class="vh-100" style="width: 50%; margin-left: 25%">
-  <div class="container py-5 h-100">
-    <div class="row d-flex justify-content-center align-items-center h-100">
-      <div class="col col-xl-10">
-        <div
-          class="card"
-          style="background-color: rgba(46, 44, 44, 0.555); border-radius: 1rem"
-        >
-          <div class="row g-0">
-            <div class="d-flex align-items-center">
-              <div class="card-body p-1 p-lg-5 text-black">
-                
-                <!-- go to /posts -->
-                <form action="/posts" method="POST"> 
-                    {{ form.hidden_tag() }}
+{% block content %}
 
-                  <div class="d-flex align-items-center mb-3 pb-1">
-                    <span class="h3 text-white">Log in</span>
-                  </div>
-
-                  <div data-mdb-input-init class="form-outline mb-4">
-                    <label class="form-label" for="username">Username: </label>
-                    <input
-                      type="text"
-                      name="username"
-                      class="form-control form-control-md"
-                      required
-                    />
-                  </div>
-
-                  <div data-mdb-input-init class="form-outline mb-4">
-                    <label class="form-label" for="password">Password: </label>
-                    <input
-                      type="password"
-                      name="password"
-                      class="form-control form-control-md"
-                      required
-                    />
-                  </div>
-
-                  <div class="pt-1 mb-4">
-                    <button
-                      data-mdb-button-init
-                      data-mdb-ripple-init
-                      class="btn btn-md btn-success"
-                      type="submit"
-                    >
-                      Login
-                    </button>
-                  </div>
-
-                  <p class="mb-5 pb-lg-2 mt-1" style="color: #26272c">
-                    Don't have an account?
-                    <a
-                      href="/register"
-                      style="text-decoration: none; color: rgb(56, 90, 182)"
-                      class="ml-2"
-                      >Register here</a
-                    >
-                  </p>
-                  <a href="#!" class="small text-muted">Terms of use.</a>
-                  <a href="#!" class="small text-muted">Privacy policy</a>
-                </form>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+{% for message in get_flashed_messages() %}
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
+{% endfor %}
+
+  <div class="container text-center mt-4">
+
+    <h1>Login or Register</h1>
+    <div class="buttons">
+      <button class="btn btn-secondary"><a href="{{ url_for('login') }}" style="text-decoration: none; color: white;">Login</a></button>
+      <button class="btn btn-secondary"><a href="{{ url_for('register') }}" style="text-decoration: none; color: white;">Register</a></button>
+    </div>
+
   </div>
-</section>
+
 
 {% endblock content %}
 

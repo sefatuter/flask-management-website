@@ -11,6 +11,14 @@
           <!-- <li class="nav-item">
             <a class="nav-link active text-white" aria-current="page" href="/login">Login</a>
           </li> -->
+
+          {% if current_user.is_authenticated %}
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('logout') }}">Logout ({{ current_user.name }})</a>
+            </li>  
+            {% else %}
+
+
         </ul>
         <span class="navbar-text text-white">
           Registration system for conference

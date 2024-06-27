@@ -13,8 +13,7 @@ from wtforms.widgets import TextArea
 #Creating flask instance
 app = Flask(__name__)
 
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:mysql1234@localhost/conf_users'
 # Secret Key
 app.config['SECRET_KEY'] = "super secret key"
 
@@ -22,16 +21,27 @@ app.config['SECRET_KEY'] = "super secret key"
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
-# Forms
-
-
-class LoginForm(FlaskForm):
-    username = StringField("Username", validators=[DataRequired()])
-    password = PasswordField("Password", validators=[DataRequired()])
-    submit = SubmitField("Submit")
 
 
 @app.route('/')
+def index():
+    return render_template('index.html')
+
+
+
+# Flask Login Stuff
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+
+@login_manager.user_loader
+def load_user(user_id):
+    return Users.query.get(int(user_id))
+
+# Login Page
+
+@app.route('/user/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
     if form.validate_on_submit():
@@ -41,54 +51,59 @@ def login():
             if check_password_hash(user.password_hash, form.password.data):
                 login_user(user)
                 flash("Login Successfull", "success")
-                return redirect(url_for('/posts'))     
+                return redirect(url_for('index'))     
             else:
                 flash("Wrong Password Try Again", "danger")
         else:
             flash("This user does not exist!")
-            
-    return render_template('index.html', form=form)
+          
+    return render_template('login.html', form=form)
 
 
+# Logout Page
 
-# Create a Blog Post Model
-class Posts(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255))
-    surname = db.Column(db.String(255))
-    email = db.Column(db.String(255))
-    school = db.Column(db.String(255))
-    department = db.Column(db.String(255))
-    date_added = db.Column(db.DateTime, default=datetime.utcnow)
+@app.route('/logout', methods=['GET', 'POST'])
+@login_required
+def logout():
+    logout_user()
+    flash("You Have Been Logged Out!!")
+    return redirect(url_for('login'))
+
+
+# Register Page
+
+@app.route('/user/register', methods=['GET', 'POST'])
+def register():
+    form = RegisterForm()
     
-
-# Create a Post Form
-class PostForm(FlaskForm):
-    name = StringField("Name", validators=[DataRequired()])
-    surname = StringField("Surname", validators=[DataRequired()], widget=TextArea())
-    email = StringField("Email", validators=[DataRequired()])
-    school = StringField("School", validators=[DataRequired()])
-    department = StringField("Department", validators=[DataRequired()])
-    submit = SubmitField("Submit")
-
-
-@app.route('/posts')
-def posts():
-    # Take all the posts from database
-    posts = Posts.query.order_by(Posts.date_posted)
-    return render_template("posts.html", posts=posts)
+    if form.validate_on_submit():
+        user = Users.query.filter_by(email=form.email.data).first()
+        if user is None:
+            # Hash Pass
+            hashed_pw = generate_password_hash(form.password_hash.data, "pbkdf2:sha256")
+            user = Users(username = form.username.data,
+                         email = form.email.data,
+                         password_hash = hashed_pw)
+            db.session.add(user)
+            flash("Registration Successful", "success")
+            db.session.commit()
+            return redirect(url_for('login'))
+        else:
+            flash("Email already registered", "warning")  
+        
+        
+    # conf_users = Users.query.order_by(Users.date_added) 
+    return render_template('register.html', form=form)
 
 
 
 class Users(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    username = db.Column(db.String(20), nullable=False, unique=True) # flask db migrate -m "added username", flask db  upgrade
-    name = db.Column(db.String(200), nullable=False)
-    email = db.Column(db.String(120), nullable=False, unique=True)
+    username = db.Column(db.String(120), nullable=False, unique=True) # flask db migrate -m "added username", flask db  upgrade
+    email = db.Column(db.String(255), nullable=False, unique=True)
     date_added = db.Column(db.DateTime, default=datetime.utcnow)
+    password_hash = db.Column(db.String(128)) # Do Password
     
-    # Do password
-    password_hash = db.Column(db.String(128))
     
     @property
     def password(self):
@@ -101,6 +116,16 @@ class Users(db.Model, UserMixin):
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
     
+    def __repr__(self):
+        return '<Name %r>' % self.name
+    
+
+class RegisterForm(FlaskForm):
+    username = StringField("Username", validators=[DataRequired()])
+    email = StringField("Email", validators=[DataRequired()])
+    password_hash = PasswordField("Password", validators=[DataRequired(), EqualTo('password_hash2', message="Passwords must match!")])
+    password_hash2 = PasswordField("Confirm Password", validators=[DataRequired()])
+    submit = SubmitField("Submit")
 
 class PasswordForm(FlaskForm):
     email = StringField("Enter Email: ", validators=[DataRequired()])
@@ -108,45 +133,16 @@ class PasswordForm(FlaskForm):
     submit = SubmitField("Submit")
 
 class UserForm(FlaskForm):
-    name = StringField("Name", validators=[DataRequired()])
     username = StringField("Username", validators=[DataRequired()])
     email = StringField("Email", validators=[DataRequired()])
     password_hash = PasswordField("Password", validators=[DataRequired(), EqualTo('password_hash2', message="Passwords must match!")])
     password_hash2 = PasswordField("Confirm Password", validators=[DataRequired()])
     submit = SubmitField("Submit")
     
-    
-
-# @app.route("/register", methods=['GET', 'POST'])
-# def register():
-#     name = None
-#     form = UserForm()
-    
-#     if form.validate_on_submit():
-#         user = Users.query.filter_by(email=form.email.data).first()
-#         if user is None:
-#             # Hash the password
-#             hashed_pw = generate_password_hash(form.password_hash.data, "pbkdf2:sha256")
-#             user = Users(username = form.username.data,
-#                          name=form.name.data,
-#                          email=form.email.data,
-#                          password_hash=hashed_pw) # instead of password_hash=form.password_hash.data
-#             db.session.add(user)
-#             db.session.commit()
-            
-#         name = form.name.data
-#         form.name.data = ''
-#         form.username.data = ''
-#         form.email.data = ''
-#         form.password_hash.data = ''
-        
-#     our_users = Users.query.order_by(Users.date_added)                
-#     return render_template("add_user.html", 
-#         form=form,
-#         name=name,
-#         our_users=our_users)
-    
-
+class LoginForm(FlaskForm):
+    username = StringField("Username", validators=[DataRequired()])
+    password = PasswordField("Password", validators=[DataRequired()])
+    submit = SubmitField("Submit")
 
 if __name__ == '__main__':
     app.run(debug=True)
