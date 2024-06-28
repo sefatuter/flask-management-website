@@ -3,19 +3,28 @@
 {% block content %}
 
 {% for message in get_flashed_messages() %}
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        {{ message }}
+<div class="alert alert-success alert-dismissible fade show mx-auto" style="width: 50%;" role="alert">
+          {{ message }}
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 {% endfor %}
 
   <div class="container text-center mt-4">
+    
+    {% if not current_user.is_authenticated %}
 
     <h1>Login or Register</h1>
     <div class="buttons">
       <button class="btn btn-secondary"><a href="{{ url_for('login') }}" style="text-decoration: none; color: white;">Login</a></button>
       <button class="btn btn-secondary"><a href="{{ url_for('register') }}" style="text-decoration: none; color: white;">Register</a></button>
     </div>
+
+    {% else %}
+
+      <h2>Welcome! {{ current_user.username }}</h2>
+    
+    {% endif %}
+
 
   </div>
 

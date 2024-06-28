@@ -27,6 +27,111 @@ migrate = Migrate(app, db)
 def index():
     return render_template('index.html')
 
+# Admin Page
+
+@app.route('/admin')
+@login_required
+def admin():
+    id = current_user.id
+    if id == 1:
+        return render_template("admin.html")
+    else:
+        flash("Sorry You Must Be The Admin To Access This Page.")
+        return redirect(url_for('index'))
+
+# Dashboard Page
+
+@app.route('/dashboard', methods=['GET', 'POST'])
+@login_required
+def dashboard():
+    form = UserForm()
+    id = current_user.id
+    name_to_update = Users.query.get_or_404(id)
+    
+    if request.method == "POST":
+        name_to_update.username = request.form['username']
+        name_to_update.email = request.form['email']
+        
+        try:
+            db.session.commit()
+            flash("User Updated Successfully!")
+
+            return render_template("dashboard.html", 
+                form=form,
+                name_to_update=name_to_update)
+        except:
+            db.session.commit()
+            flash("Error! ...try again")
+            return render_template("dashboard.html", 
+                form=form,
+                name_to_update=name_to_update,
+                id=id)
+    else:
+        return render_template("dashboard.html", 
+                form=form,
+                name_to_update=name_to_update,
+                id=id)
+
+# Update Page
+@app.route("/update/<int:id>", methods=['GET', 'POST'])
+@login_required
+def update(id):
+    form = UserForm()
+    name_to_update = Users.query.get_or_404(id)
+    
+    if id != current_user.id:
+        flash("You Can't Edit This User", "danger")
+        return redirect(url_for('dashboard'))  # Redirect to dashboard or any appropriate page
+
+    if request.method == "POST":
+        name_to_update.email = request.form['email']
+        name_to_update.username = request.form['username']
+        
+        try:
+            db.session.commit()
+            flash("User Updated Successfully!", "success")
+
+            return redirect(url_for('dashboard'))  # Redirect to avoid re-posting the form on refresh
+        except:
+            db.session.rollback()
+            flash("Error! ...try again", "danger")
+            return render_template("update.html", 
+                form=form,
+                name_to_update=name_to_update,
+                id=id)
+    else:
+        return render_template("update.html", 
+                form=form,
+                name_to_update=name_to_update,
+                id=id)
+
+
+# Delete Page
+@app.route("/delete/<int:id>", methods=['GET', 'POST'])
+def delete(id):
+    name = None
+    form = UserForm()
+    user_to_delete = Users.query.get_or_404(id)
+   
+    try:
+        db.session.delete(user_to_delete)
+        db.session.commit()
+        flash("User Deleted Successfully!")
+        
+        our_users = Users.query.order_by(Users.date_added)                
+        return render_template("index.html", 
+        form=form,
+        name=name,
+        our_users=our_users)
+    except:
+        flash("Whoops! There was a problem...")
+        return render_template("index.html", 
+        form=form,
+        name=name,
+        our_users=our_users)
+
+
+
 
 
 # Flask Login Stuff
@@ -43,6 +148,10 @@ def load_user(user_id):
 
 @app.route('/user/login', methods=['GET', 'POST'])
 def login():
+    if current_user.is_authenticated:
+        flash("You are already logged in.", "info")
+        return redirect(url_for('dashboard'))
+    
     form = LoginForm()
     if form.validate_on_submit():
         user = Users.query.filter_by(username=form.username.data).first() # First searchs for username if it exist. ( username is unique )
@@ -74,23 +183,28 @@ def logout():
 
 @app.route('/user/register', methods=['GET', 'POST'])
 def register():
-    form = RegisterForm()
+    if current_user.is_authenticated:
+        flash("You are already registered and logged in.", "info")
+        return redirect(url_for('dashboard'))
     
+    form = RegisterForm()
     if form.validate_on_submit():
-        user = Users.query.filter_by(email=form.email.data).first()
-        if user is None:
+        user_by_email = Users.query.filter_by(email=form.email.data).first()
+        user_by_username = Users.query.filter_by(username=form.username.data).first()
+        if user_by_email:
+            flash("Email already registered", "warning")
+        elif user_by_username:
+            flash("Username already taken", "warning")
+        else:
             # Hash Pass
             hashed_pw = generate_password_hash(form.password_hash.data, "pbkdf2:sha256")
-            user = Users(username = form.username.data,
-                         email = form.email.data,
-                         password_hash = hashed_pw)
+            user = Users(username=form.username.data,
+                         email=form.email.data,
+                         password_hash=hashed_pw)
             db.session.add(user)
-            flash("Registration Successful", "success")
             db.session.commit()
+            flash("Registration Successful", "success")
             return redirect(url_for('login'))
-        else:
-            flash("Email already registered", "warning")  
-        
         
     # conf_users = Users.query.order_by(Users.date_added) 
     return render_template('register.html', form=form)
@@ -143,6 +257,19 @@ class LoginForm(FlaskForm):
     username = StringField("Username", validators=[DataRequired()])
     password = PasswordField("Password", validators=[DataRequired()])
     submit = SubmitField("Submit")
+    
+    
+# Create Custom Error Pages
+
+#1-Invalid URL
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template("404.html"), 404
+
+#2-Internal Server Error
+@app.errorhandler(500)
+def page_not_found(e):
+    return render_template("500.html"), 500
 
 if __name__ == '__main__':
     app.run(debug=True)

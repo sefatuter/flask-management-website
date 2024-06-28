@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+{% for message in get_flashed_messages() %}
+
+    <div class="alert alert-success alert-dismissible fade show mx-auto" style="width: 50%;" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+{% endfor %}
+
+
+{% if id == current_user.id  %}
+
+<div class="container">
+    <h1>Update User</h1>
+    <br><br>
+    
+
+    <div class="shadow p-3 mb-5 bg-body-tertiary rounded">
+        <form method="POST" action="/update/{{ name_to_update.id }}">
+            {{ form.hidden_tag() }}
+
+            {{ form.username.label(class="form-label") }}
+
+            {{ form.username(class="form-control", value=name_to_update.username) }}
+            
+            <br/>
+
+            {{ form.email.label(class="form-label") }}
+
+            {{ form.email(class="form-control", value=name_to_update.email) }}
+            
+            <br>
+            {{ form.submit(
+                class="btn btn-secondary") }}
+            
+            <a href="{{ url_for('delete', id=id) }}" class="btn btn-danger" >Delete</a>
+
+        </form>
+    </div>
+
+    <br/><br/><br/>
+{% else %}
+<div class="container">
+
+<div class="alert alert-danger alert-dismissible fade show mx-auto" style="width: 50%;" role="alert">
+    You Can't Edit This User
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <h2>Access Denied.</h2>
+</div>
+
+{% endif %}
+</div>
+{% endblock content %}
+
+
