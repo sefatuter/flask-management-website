@@ -1,6 +1,6 @@
 from flask import Flask, render_template, flash, request, redirect, url_for
 from flask_wtf import FlaskForm # pip install flask_wtf
-from wtforms import StringField, SubmitField, PasswordField, BooleanField, ValidationError
+from wtforms import StringField, SubmitField, PasswordField, BooleanField, ValidationError, SelectField
 from wtforms.validators import DataRequired, EqualTo, Length
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user, current_user # pip install flask_login
@@ -190,21 +190,41 @@ def part_list():
     return render_template('part_list.html', users=users)
 
 
-# Add Participant Page
 @app.route('/admin/add', methods=['GET', 'POST'])
 def add():
-    if request.method == 'POST':
-        name = request.form['name']
-        surname = request.form['surname']
-        email = request.form['email']
-        phone = request.form['phone']
-        school = request.form['school']
-        department = request.form['department']
+    form = ParticipantForm()
+    
+    # Querying distinct schools and departments from the database
+    schools = db.session.query(SchoolList.school).distinct().all()
+    departments = db.session.query(DepartmentList.department).distinct().all()
+
+    # Setting choices for the SelectFields
+    form.school.choices = [(school[0], school[0]) for school in schools]
+    form.department.choices = [(department[0], department[0]) for department in departments]
+    
+    if form.validate_on_submit():
+        name = form.name.data
+        surname = form.surname.data
+        email = form.email.data
+        phone = form.phone.data
+        school = form.school.data
+        department = form.department.data
         new_user = Participant(name=name, surname=surname, email=email, phone=phone, school=school, department=department)
         db.session.add(new_user)
-        db.session.commit()        
+        db.session.commit()
         return redirect(url_for('part_list'))
-    return render_template('add.html')
+    
+    return render_template('add.html', form=form)
+
+
+class SchoolUser(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    school = db.Column(db.String(100), nullable=False)
+    department = db.Column(db.String(100), nullable=False)
+    
+    def __repr__(self):
+        return f'<SchoolUser {self.school} - {self.department}>'
+    
 
 # Edit Participant Page
 @app.route('/edit/<int:id>', methods=['GET', 'POST'])
@@ -248,8 +268,8 @@ class ParticipantForm(FlaskForm):
     surname = StringField("Surname", validators=[DataRequired()])
     email = StringField("Email", validators=[DataRequired()])
     phone = StringField("Phone", validators=[DataRequired()])
-    school = StringField("School", validators=[DataRequired()])
-    department = StringField("Department", validators=[DataRequired()])
+    school = SelectField("School", validators=[DataRequired()], choices=[])
+    department = SelectField("Department", validators=[DataRequired()], choices=[])
     submit = SubmitField("Add Participant")
 
 
@@ -301,6 +321,24 @@ class LoginForm(FlaskForm):
     password = PasswordField("Password", validators=[DataRequired()])
     submit = SubmitField("Submit")
     
+    
+class SchoolList(db.Model):
+    __tablename__ = 'school_list'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    school = db.Column(db.String(500), nullable=False, unique=True)
+
+    def __repr__(self):
+        return f'<SchoolList {self.name}>'
+
+class DepartmentList(db.Model):
+    __tablename__ = 'department_list'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    department = db.Column(db.String(500), nullable=False, unique=True)
+
+    def __repr__(self):
+        return f'<DepartmentList {self.name}>'
+
+
     
 # Create Custom Error Pages
 
