@@ -234,7 +234,7 @@ def delete(id):
 
 
 class Participant(db.Model):
-    id = db.Column(db.Integer, primary_key=True, nullable=False, autoincrement=True)
+    id = db.Column(db.Integer, primary_key=True, nullable=False)
     name = db.Column(db.String(80), nullable=False)
     surname = db.Column(db.String(80), nullable=False)
     email = db.Column(db.String(120), nullable=False)
