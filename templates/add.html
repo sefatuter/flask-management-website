@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container">
+<h2>Add New User</h2>
+<form method="POST">
+    <div class="mb-3">
+        <label for="name" class="form-label">Name:</label>
+        <input type="text" id="name" name="name" class="form-control">
+    </div>
+    <div class="mb-3">
+        <label for="surname" class="form-label">Surname:</label>
+        <input type="text" id="surname" name="surname" class="form-control">
+    </div>
+    <div class="mb-3">
+        <label for="email" class="form-label">Email:</label>
+        <input type="email" id="email" name="email" class="form-control">
+    </div>
+    <div class="mb-3">
+        <label for="phone" class="form-label">Phone:</label>
+        <input type="text" id="phone" name="phone" class="form-control">
+    </div>
+    <div class="mb-3">
+        <label for="school" class="form-label">School:</label>
+        <input type="text" id="school" name="school" class="form-control">
+    </div>
+    <div class="mb-3">
+        <label for="department" class="form-label">Department:</label>
+        <input type="text" id="department" name="department" class="form-control">
+    </div>
+    <button type="submit" class="btn btn-success">Add User</button>
+</form>
+</div>
+
+{% endblock %}

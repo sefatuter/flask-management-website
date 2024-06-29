@@ -106,34 +106,6 @@ def update(id):
                 id=id)
 
 
-# Delete Page
-@app.route("/delete/<int:id>", methods=['GET', 'POST'])
-def delete(id):
-    name = None
-    form = UserForm()
-    user_to_delete = Users.query.get_or_404(id)
-   
-    try:
-        db.session.delete(user_to_delete)
-        db.session.commit()
-        flash("User Deleted Successfully!")
-        
-        our_users = Users.query.order_by(Users.date_added)                
-        return render_template("index.html", 
-        form=form,
-        name=name,
-        our_users=our_users)
-    except:
-        flash("Whoops! There was a problem...")
-        return render_template("index.html", 
-        form=form,
-        name=name,
-        our_users=our_users)
-
-
-
-
-
 # Flask Login Stuff
 
 login_manager = LoginManager()
@@ -208,6 +180,77 @@ def register():
         
     # conf_users = Users.query.order_by(Users.date_added) 
     return render_template('register.html', form=form)
+
+
+# Main Conference Page
+
+@app.route('/admin/participant_list', methods=['GET', 'POST'])
+def part_list():
+    users = Participant.query.all()
+    return render_template('part_list.html', users=users)
+
+
+# Add Participant Page
+@app.route('/admin/add', methods=['GET', 'POST'])
+def add():
+    if request.method == 'POST':
+        name = request.form['name']
+        surname = request.form['surname']
+        email = request.form['email']
+        phone = request.form['phone']
+        school = request.form['school']
+        department = request.form['department']
+        new_user = Participant(name=name, surname=surname, email=email, phone=phone, school=school, department=department)
+        db.session.add(new_user)
+        db.session.commit()        
+        return redirect(url_for('part_list'))
+    return render_template('add.html')
+
+# Edit Participant Page
+@app.route('/edit/<int:id>', methods=['GET', 'POST'])
+def edit(id):
+    user = Participant.query.get_or_404(id)
+    if request.method == 'POST':
+        user.name = request.form['name']
+        user.surname = request.form['surname']
+        user.email = request.form['email']
+        user.phone = request.form['phone']
+        user.school = request.form['school']
+        user.department = request.form['department']
+        db.session.commit()
+        flash("User Updated Successfully")
+        return redirect(url_for('part_list'))
+    return render_template('edit.html', user=user)
+
+
+# Delete Participant Page
+@app.route('/delete/<int:id>')
+def delete(id):
+    user = Participant.query.get_or_404(id)
+    db.session.delete(user)
+    db.session.commit()
+    flash("User Deleted Successfully")
+    return redirect(url_for('part_list'))
+
+
+class Participant(db.Model):
+    id = db.Column(db.Integer, primary_key=True, nullable=False, autoincrement=True)
+    name = db.Column(db.String(80), nullable=False)
+    surname = db.Column(db.String(80), nullable=False)
+    email = db.Column(db.String(120), nullable=False)
+    phone = db.Column(db.String(20), nullable=False)
+    school = db.Column(db.String(100), nullable=False)
+    department = db.Column(db.String(100), nullable=False)
+
+
+class ParticipantForm(FlaskForm):
+    name = StringField("Name", validators=[DataRequired()])
+    surname = StringField("Surname", validators=[DataRequired()])
+    email = StringField("Email", validators=[DataRequired()])
+    phone = StringField("Phone", validators=[DataRequired()])
+    school = StringField("School", validators=[DataRequired()])
+    department = StringField("Department", validators=[DataRequired()])
+    submit = SubmitField("Add Participant")
 
 
 

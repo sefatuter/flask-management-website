@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+{% for message in get_flashed_messages() %}
+
+    <div class="alert alert-success alert-dismissible fade show mx-auto" style="width: 50%;" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+{% endfor %}
+
+
+
+<div class="container">
+
+    <div class="button-group">
+        <a href="{{ url_for('add') }}" class="btn btn-success">Add Person</a>
+    </div>
+
+<div class="card my-3 text-center">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Surname</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>School</th>
+                        <th>Department</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ user.id }}</td>
+                        <td>{{ user.name }}</td>
+                        <td>{{ user.surname }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>{{ user.phone }}</td>
+                        <td>{{ user.school }}</td>
+                        <td>{{ user.department }}</td>
+                        <td>
+                            <a href="{{ url_for('edit', id=user.id) }}" class="btn btn-warning btn-sm">Edit</a>
+                            <a href="{{ url_for('delete', id=user.id) }}" class="btn btn-danger btn-sm">Delete</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</div>
+
+
+{% endblock content %}
+
+
