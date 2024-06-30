@@ -186,35 +186,35 @@ def register():
 
 @app.route('/admin/participant_list', methods=['GET', 'POST'])
 def part_list():
-    users = Participant.query.all()
-    return render_template('part_list.html', users=users)
+    participants = db.session.query(Participant).join(SchoolList, Participant.school_id == SchoolList.id).join(DepartmentList, Participant.department_id == DepartmentList.id).all()
+    return render_template('part_list.html', users=participants)
+
 
 
 @app.route('/admin/add', methods=['GET', 'POST'])
 def add():
     form = ParticipantForm()
-    
-    # Querying distinct schools and departments from the database
-    schools = db.session.query(SchoolList.school).distinct().all()
-    departments = db.session.query(DepartmentList.department).distinct().all()
 
-    # Setting choices for the SelectFields
-    form.school.choices = [(school[0], school[0]) for school in schools]
-    form.department.choices = [(department[0], department[0]) for department in departments]
-    
+    schools = db.session.query(SchoolList).all()
+    departments = db.session.query(DepartmentList).all()
+
+    form.school.choices = [(school.id, school.school) for school in schools]
+    form.department.choices = [(department.id, department.department) for department in departments]
+
     if form.validate_on_submit():
         name = form.name.data
         surname = form.surname.data
         email = form.email.data
         phone = form.phone.data
-        school = form.school.data
-        department = form.department.data
-        new_user = Participant(name=name, surname=surname, email=email, phone=phone, school=school, department=department)
+        school_id = form.school.data
+        department_id = form.department.data
+        new_user = Participant(name=name, surname=surname, email=email, phone=phone, school_id=school_id, department_id=department_id)
         db.session.add(new_user)
         db.session.commit()
         return redirect(url_for('part_list'))
-    
+
     return render_template('add.html', form=form)
+
 
 
 class SchoolUser(db.Model):
@@ -230,17 +230,42 @@ class SchoolUser(db.Model):
 @app.route('/edit/<int:id>', methods=['GET', 'POST'])
 def edit(id):
     user = Participant.query.get_or_404(id)
-    if request.method == 'POST':
-        user.name = request.form['name']
-        user.surname = request.form['surname']
-        user.email = request.form['email']
-        user.phone = request.form['phone']
-        user.school = request.form['school']
-        user.department = request.form['department']
+    user.department = DepartmentList.query.get(user.department_id)
+
+    form = ParticipantForm(obj=user)
+    
+    # Get the school name using the school_id from the participant table
+    # school_name = SchoolList.query.get(user.school_id).school
+    # <div>
+    #     {{ school_name }}
+    # </div>
+    # school_name=school_name
+
+    schools = SchoolList.query.all()
+    departments = DepartmentList.query.all()
+
+    form.school.choices = [(school.id, school.school) for school in schools]
+    form.department.choices = [(department.id, department.department) for department in departments]
+
+    if request.method == 'GET':
+        form.school.data = user.school_id
+        form.department.data = user.department_id
+
+    if form.validate_on_submit():
+        user.name = form.name.data
+        user.surname = form.surname.data
+        user.email = form.email.data
+        user.phone = form.phone.data
+        user.school_id = form.school.data
+        user.department_id = form.department.data
         db.session.commit()
         flash("User Updated Successfully")
         return redirect(url_for('part_list'))
-    return render_template('edit.html', user=user)
+    
+    print(form.school.data)
+
+    return render_template('edit.html', form=form, user=user)
+
 
 
 # Delete Participant Page
@@ -255,12 +280,15 @@ def delete(id):
 
 class Participant(db.Model):
     id = db.Column(db.Integer, primary_key=True, nullable=False)
-    name = db.Column(db.String(80), nullable=False)
-    surname = db.Column(db.String(80), nullable=False)
-    email = db.Column(db.String(120), nullable=False)
+    name = db.Column(db.String(255), nullable=False)
+    surname = db.Column(db.String(255), nullable=False)
+    email = db.Column(db.String(255), nullable=False)
     phone = db.Column(db.String(20), nullable=False)
-    school = db.Column(db.String(100), nullable=False)
-    department = db.Column(db.String(100), nullable=False)
+    school_id = db.Column(db.Integer, db.ForeignKey('school_list.id'), nullable=False)
+    department_id = db.Column(db.Integer, db.ForeignKey('department_list.id'), nullable=False)
+
+    school = db.relationship('SchoolList', backref='participants')
+    department = db.relationship('DepartmentList', backref='participants')
 
 
 class ParticipantForm(FlaskForm):
@@ -328,7 +356,7 @@ class SchoolList(db.Model):
     school = db.Column(db.String(500), nullable=False, unique=True)
 
     def __repr__(self):
-        return f'<SchoolList {self.name}>'
+        return self.school
 
 class DepartmentList(db.Model):
     __tablename__ = 'department_list'
@@ -336,7 +364,8 @@ class DepartmentList(db.Model):
     department = db.Column(db.String(500), nullable=False, unique=True)
 
     def __repr__(self):
-        return f'<DepartmentList {self.name}>'
+        return self.department
+
 
 
     
