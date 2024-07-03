@@ -1,9 +1,9 @@
-body {
+/* body {
     background-size: cover;
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    color: #fff;
+    color: #51a7b6bd;
 }
 
 .container {
@@ -52,13 +52,11 @@ h2 {
 }
 
 form .form-control {
-    background: rgba(255, 255, 255, 0.1);
-    color: #ffffff;
+    background: rgba(255, 255, 255, 0.842);
 }
 
 form .form-control:focus {
     background: rgba(255, 255, 255, 0.2);
-    color: #ffffff;
 }
 
 form label {
@@ -76,4 +74,4 @@ button[type="submit"] {
 
 button[type="submit"]:hover {
     background-color: #4cae4c;
-}
+} */
