@@ -59,18 +59,17 @@
     Response:
     - Status: '200 OK'
     - Body:
-        
-    ```
-    [
-        {
-            "id": 1,
-            "username": "user",
-            "email": "user@test.com",
-            "date_added": "2023-01-01 12:00:00"
-        },
-        ...
-    ]
-    ```
+        ```
+        [
+            {
+                "id": 1,
+                "username": "user",
+                "email": "user@test.com",
+                "date_added": "2023-01-01 12:00:00"
+            },
+            ...
+        ]
+        ```
 
     2. Create a New User
 
