@@ -48,7 +48,7 @@
 
 * Method: GET
 
-    1. **Retrieve All Users**
+    **1. Retrieve All Users**
 
     Endpoint : ```GET /users```
 
