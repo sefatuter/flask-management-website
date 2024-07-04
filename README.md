@@ -40,3 +40,35 @@
 
 ![user_update](https://github.com/sefatuter/flask-management-website/assets/95074982/5e6fd224-9183-406f-95be-4b283c282f8f)
 
+
+# API Documentation:
+
+## Base URL:  ```http://localhost:5000/api```
+
+
+* Method: GET
+
+1. Retrieve All Users
+
+Endpoint : ```GET /users```
+
+GET http://localhost:5000/api/users
+
+Response:
+    * Status: '200 OK'
+    * Body:
+        ```
+        [
+            {
+                "id": 1,
+                "username": "user",
+                "email": "user@test.com",
+                "date_added": "2023-01-01 12:00:00"
+            },
+            ...
+        ]
+        ```
+
+2. Create a New User
+
+Endpoint : ```POST /users```
