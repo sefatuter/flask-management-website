@@ -48,27 +48,28 @@
 
 * Method: GET
 
-1. Retrieve All Users
+    1. Retrieve All Users
 
-Endpoint : ```GET /users```
+    Endpoint : ```GET /users```
 
-GET http://localhost:5000/api/users
+    GET http://localhost:5000/api/users
 
-Response:
-    * Status: '200 OK'
-    * Body:
-        ```
-        [
-            {
-                "id": 1,
-                "username": "user",
-                "email": "user@test.com",
-                "date_added": "2023-01-01 12:00:00"
-            },
-            ...
-        ]
-        ```
+    Response:
+        * Status: '200 OK'
+        * Body:
+        
+    ```
+    [
+        {
+            "id": 1,
+            "username": "user",
+            "email": "user@test.com",
+            "date_added": "2023-01-01 12:00:00"
+        },
+        ...
+    ]
+    ```
 
-2. Create a New User
+    2. Create a New User
 
-Endpoint : ```POST /users```
+    Endpoint : ```POST /users```
