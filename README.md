@@ -59,6 +59,7 @@
     Response:
     - Status: '200 OK'
     - Body:
+        
         ```
         [
             {
@@ -71,6 +72,6 @@
         ]
         ```
 
-    2. Create a New User
+    2. **Create a New User**
 
     Endpoint : ```POST /users```
