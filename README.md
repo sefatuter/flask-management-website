@@ -46,7 +46,8 @@
 ### Base URL:  ```http://localhost:5000/api```
 
 
-* Method: GET
+
+* For Users:
 
     **1. Retrieve All Users**
 
@@ -72,6 +73,292 @@
         ]
         ```
 
-    2. **Create a New User**
+
+    **2. Create a New User**
 
     Endpoint : ```POST /users```
+
+    ```
+    POST http://localhost:5000/api/users
+    ```
+
+    Request:
+    - Body:
+        
+        ```
+        {
+            "username": "new_user",
+            "email": "new_user@test.com",
+            "password": "password123"
+        }
+        ```
+    
+    Response:
+    - Status: 201 Created
+    - Body:
+
+        ```
+        {
+            "message": "User created successfully"
+        }
+        ```
+
+
+    **3. Retrieve a Specific User by ID**
+
+    Endpoint : ```GET /users/<int:user_id>```
+
+    ```
+    GET http://localhost:5000/api/users/<int:user_id>
+    ```
+
+    Response:
+    - Status: '200 OK'
+    - Body:
+        
+        ```
+        [
+            {
+                "id": 1,
+                "username": "user",
+                "email": "user@test.com",
+                "date_added": "2023-01-01 12:00:00"
+            }
+        ]
+        ```
+    - Status: '404 Not Found'
+    - Body:
+
+        ```
+        {
+            "message": "User not found"
+        }
+        ```
+
+
+    **4. Update a Specific User by ID**
+
+    Endpoint : ```PUT /users/<int:user_id>```
+
+    ```
+    PUT http://localhost:5000/api/users/<int:user_id>
+    ```
+
+    Request:
+    - Body:
+        
+        ```
+        {
+            "username": "updated_user",
+            "email": "updated_user@example.com",
+            "password": "new_password123"
+        }
+        ```
+    
+    Response:
+    - Status: '200 OK'
+    - Body:
+
+        ```
+        {
+            "message": "User updated successfully"
+        }
+        ```
+    - Status: '404 Not Found'
+    - Body:
+        ```
+        {
+            "message": "User not found"
+        }
+        ```
+
+
+    **5. Delete a Specific User by ID**
+
+    Endpoint : ```DELETE /users/<int:user_id>```
+
+    ```
+    DELETE http://localhost:5000/api/users/<int:user_id>
+    ```
+
+    Response:
+    - Status: '200 OK'
+    - Body:
+        
+        ```
+        {
+            "message": "User deleted successfully"
+        }
+        ```
+    - Status: '404 Not Found'
+    - Body:
+
+        ```
+        {
+            "message": "User not found"
+        }
+        ```
+
+
+* For Participants:
+
+    **1. Retrieve All Participants**
+
+    Endpoint : ```GET /participants```
+
+    ```
+    GET http://localhost:5000/api/participants
+    ```
+
+    Response:
+    - Status: '200 OK'
+    - Body:
+        
+        ```
+        [
+            {
+                "id": 1,
+                "name": "John",
+                "surname": "Doe",
+                "email": "john.doe@example.com",
+                "phone": "123-456-7890",
+                "school_id": 1,
+                "department_id": 1
+            },
+            ...
+        ]
+        ```
+
+
+    **2. Create a New Participant**
+
+    Endpoint : ```POST /participants```
+
+    ```
+    POST http://localhost:5000/api/participants
+    ```
+
+    Request:
+    - Body:
+        
+        ```
+        {
+            "name": "Jane",
+            "surname": "Doe",
+            "email": "jane.doe@example.com",
+            "phone": "987-654-3210",
+            "school_id": 2,
+            "department_id": 3
+        }
+        ```
+    
+    Response:
+    - Status: 201 Created
+    - Body:
+
+        ```
+        {
+            "message": "Participant created successfully"
+        }
+        ```
+
+
+    **3. Retrieve a Specific Participant by ID**
+
+    Endpoint : ```GET /participant/<int:participant_id>```
+
+    ```
+    GET http://localhost:5000/api/participant/<int:participant_id>
+    ```
+
+    Response:
+    - Status: '200 OK'
+    - Body:
+        
+        ```
+        {
+            "id": 1,
+            "name": "John",
+            "surname": "Doe",
+            "email": "john.doe@example.com",
+            "phone": "123-456-7890",
+            "school_id": 1,
+            "department_id": 1
+        }
+        ```
+    - Status: '404 Not Found'
+    - Body:
+
+        ```
+        {
+            "message": "Participant not found"
+        }
+        ```
+
+
+    **4. Update a Specific Participant by ID**
+
+    Endpoint : ```PUT /participant/<int:participant_id>```
+
+    ```
+    PUT http://localhost:5000/api/participant/<int:participant_id>
+    ```
+
+    Request:
+    - Body:
+        
+        ```
+        {
+            "name": "Updated Name",
+            "surname": "Updated Surname",
+            "email": "updated.email@example.com",
+            "phone": "123-456-7890",
+            "school_id": 1,
+            "department_id": 2
+        }
+        ```
+    
+    Response:
+    - Status: '200 OK'
+    - Body:
+
+        ```
+        {
+            "message": "Participant updated successfully"
+        }
+        ```
+    - Status: '404 Not Found'
+    - Body:
+        ```
+        {
+            "message": "Participant not found"
+        }
+        ```
+
+
+    **5. Delete a Specific Participant by ID**
+
+    Endpoint : ```DELETE /participant/<int:participant_id>```
+
+    ```
+    DELETE http://localhost:5000/api/participant/<int:participant_id>
+    ```
+
+    Response:
+    - Status: '200 OK'
+    - Body:
+        
+        ```
+        {
+            "message": "Participant deleted successfully"
+        }
+        ```
+    - Status: '404 Not Found'
+    - Body:
+
+        ```
+        {
+            "message": "Participant not found"
+        }
+        ```
+
