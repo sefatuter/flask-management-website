@@ -52,11 +52,13 @@
 
     Endpoint : ```GET /users```
 
+    ```
     GET http://localhost:5000/api/users
+    ```
 
     Response:
-        * Status: '200 OK'
-        * Body:
+    - Status: '200 OK'
+    - Body:
         
     ```
     [
