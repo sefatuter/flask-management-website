@@ -1,17 +1,20 @@
-from flask import Flask, render_template, flash, request, redirect, url_for, jsonify
-from flask_wtf import FlaskForm  # pip install flask_wtf
+from flask import Flask, render_template, flash, request, redirect, url_for, jsonify, session
+from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, PasswordField, BooleanField, ValidationError, SelectField
 from wtforms.validators import DataRequired, EqualTo, Length
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user, current_user  # pip install flask_login
+from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user, current_user
 from forms import RegisterForm, PasswordForm, UserForm, LoginForm, ParticipantForm
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
-
+from datetime import datetime, timedelta
 from flask_restful import Resource, Api
+from authlib.integrations.flask_client import OAuth
+import os
+from dotenv import load_dotenv
 
-from wtforms.widgets import TextArea
+# dotenv setup
+load_dotenv()
 
 # Creating flask instance
 app = Flask(__name__)
@@ -19,7 +22,9 @@ api = Api(app)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:mysql1234@localhost/conf_users'
 # Secret Key
-app.config['SECRET_KEY'] = "super secret key"
+app.config['SECRET_KEY'] = os.getenv("APP_SECRET_KEY")
+app.config['SESSION_COOKIE_NAME'] = 'google-login-session'
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=5)
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
@@ -33,14 +38,30 @@ login_manager.login_view = 'login'
 def load_user(user_id):
     return Users.query.get(int(user_id))
 
+# OAuth Setup
+oauth = OAuth(app)
+google = oauth.register(
+    name='google',
+    client_id=os.getenv("GOOGLE_CLIENT_ID"),
+    client_secret=os.getenv("GOOGLE_CLIENT_SECRET"),
+    access_token_url='https://accounts.google.com/o/oauth2/token',
+    access_token_params=None,
+    authorize_url='https://accounts.google.com/o/oauth2/auth',
+    authorize_params=None,
+    api_base_url='https://www.googleapis.com/oauth2/v1/',
+    userinfo_endpoint='https://openidconnect.googleapis.com/v1/userinfo',
+    client_kwargs={'scope': 'email profile'},
+    server_metadata_url='https://accounts.google.com/.well-known/openid-configuration'
+)
+
 # Models
 class Users(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    username = db.Column(db.String(120), nullable=False, unique=True)  # flask db migrate -m "added username", flask db  upgrade
+    username = db.Column(db.String(120), nullable=False, unique=True)
     email = db.Column(db.String(255), nullable=False, unique=True)
     date_added = db.Column(db.DateTime, default=datetime.utcnow)
-    password_hash = db.Column(db.String(255))  # Increased size to 255
-    
+    password_hash = db.Column(db.String(255))
+
     @property
     def password(self):
         raise AttributeError('Password is a not readable attribute!')
@@ -54,7 +75,6 @@ class Users(db.Model, UserMixin):
     
     def __repr__(self):
         return '<Name %r>' % self.name
-    
 
 class SchoolList(db.Model):
     __tablename__ = 'school_list'
@@ -84,13 +104,11 @@ class Participant(db.Model):
     school = db.relationship('SchoolList', backref='participants')
     department = db.relationship('DepartmentList', backref='participants')
 
-
 # Routes
 @app.route('/')
 def index():
     return render_template('index.html')
 
-# Admin Page
 @app.route('/admin')
 @login_required
 def admin():
@@ -101,7 +119,6 @@ def admin():
         flash("Sorry You Must Be The Admin To Access This Page.")
         return redirect(url_for('index'))
 
-# Dashboard Page
 @app.route('/dashboard', methods=['GET', 'POST'])
 @login_required
 def dashboard():
@@ -116,24 +133,14 @@ def dashboard():
         try:
             db.session.commit()
             flash("User Updated Successfully!")
-
-            return render_template("dashboard.html", 
-                form=form,
-                name_to_update=name_to_update)
+            return render_template("dashboard.html", form=form, name_to_update=name_to_update)
         except:
-            db.session.commit()
+            db.session.rollback()
             flash("Error! ...try again")
-            return render_template("dashboard.html", 
-                form=form,
-                name_to_update=name_to_update,
-                id=id)
+            return render_template("dashboard.html", form=form, name_to_update=name_to_update, id=id)
     else:
-        return render_template("dashboard.html", 
-                form=form,
-                name_to_update=name_to_update,
-                id=id)
+        return render_template("dashboard.html", form=form, name_to_update=name_to_update, id=id)
 
-# Update Page
 @app.route("/update/<int:id>", methods=['GET', 'POST'])
 @login_required
 def update(id):
@@ -151,22 +158,14 @@ def update(id):
         try:
             db.session.commit()
             flash("User Updated Successfully!", "success")
-
             return redirect(url_for('dashboard'))  # Redirect to avoid re-posting the form on refresh
         except:
             db.session.rollback()
             flash("Error! ...try again", "danger")
-            return render_template("update.html", 
-                form=form,
-                name_to_update=name_to_update,
-                id=id)
+            return render_template("update.html", form=form, name_to_update=name_to_update, id=id)
     else:
-        return render_template("update.html", 
-                form=form,
-                name_to_update=name_to_update,
-                id=id)
+        return render_template("update.html", form=form, name_to_update=name_to_update, id=id)
 
-# Login Page
 @app.route('/user/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
@@ -175,29 +174,22 @@ def login():
     
     form = LoginForm()
     if form.validate_on_submit():
-        user = Users.query.filter_by(username=form.username.data).first() # First searchs for username if it exist. ( username is unique )
-        if user:
-            # Check the hash
-            if check_password_hash(user.password_hash, form.password.data):
-                login_user(user)
-                flash("Login Successfull", "success")
-                return redirect(url_for('index'))     
-            else:
-                flash("Wrong Password Try Again", "danger")
+        user = Users.query.filter_by(username=form.username.data).first()
+        if user and check_password_hash(user.password_hash, form.password.data):
+            login_user(user)
+            flash("Login Successful", "success")
+            return redirect(url_for('index'))
         else:
-            flash("This user does not exist!")
-          
+            flash("Invalid username or password", "danger")
     return render_template('login.html', form=form)
 
-# Logout Page
-@app.route('/logout', methods=['GET', 'POST'])
+@app.route('/logout')
 @login_required
 def logout():
     logout_user()
     flash("You Have Been Logged Out!!")
     return redirect(url_for('login'))
 
-# Register Page
 @app.route('/user/register', methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
@@ -213,20 +205,14 @@ def register():
         elif user_by_username:
             flash("Username already taken", "warning")
         else:
-            # Hash Pass
             hashed_pw = generate_password_hash(form.password_hash.data, "pbkdf2:sha256")
-            user = Users(username=form.username.data,
-                         email=form.email.data,
-                         password_hash=hashed_pw)
+            user = Users(username=form.username.data, email=form.email.data, password_hash=hashed_pw)
             db.session.add(user)
             db.session.commit()
             flash("Registration Successful", "success")
             return redirect(url_for('login'))
-        
-    # conf_users = Users.query.order_by(Users.date_added) 
     return render_template('register.html', form=form)
 
-# Main Conference Page
 @app.route('/admin/participant_list', methods=['GET', 'POST'])
 def part_list():
     participants = db.session.query(Participant).join(SchoolList, Participant.school_id == SchoolList.id).join(DepartmentList, Participant.department_id == DepartmentList.id).all()
@@ -235,38 +221,25 @@ def part_list():
 @app.route('/admin/add', methods=['GET', 'POST'])
 def add():
     form = ParticipantForm()
-
     schools = db.session.query(SchoolList).all()
     departments = db.session.query(DepartmentList).all()
-
     form.school.choices = [(school.id, school.school) for school in schools]
     form.department.choices = [(department.id, department.department) for department in departments]
 
     if form.validate_on_submit():
-        name = form.name.data
-        surname = form.surname.data
-        email = form.email.data
-        phone = form.phone.data
-        school_id = form.school.data
-        department_id = form.department.data
-        new_user = Participant(name=name, surname=surname, email=email, phone=phone, school_id=school_id, department_id=department_id)
+        new_user = Participant(name=form.name.data, surname=form.surname.data, email=form.email.data, phone=form.phone.data, school_id=form.school.data, department_id=form.department.data)
         db.session.add(new_user)
         db.session.commit()
         return redirect(url_for('part_list'))
-
     return render_template('add.html', form=form)
 
-# Edit Participant Page
 @app.route('/edit/<int:id>', methods=['GET', 'POST'])
 def edit(id):
     user = Participant.query.get_or_404(id)
     user.department = DepartmentList.query.get(user.department_id)
-
     form = ParticipantForm(obj=user)
-    
     schools = SchoolList.query.all()
     departments = DepartmentList.query.all()
-
     form.school.choices = [(school.id, school.school) for school in schools]
     form.department.choices = [(department.id, department.department) for department in departments]
 
@@ -284,12 +257,8 @@ def edit(id):
         db.session.commit()
         flash("User Updated Successfully")
         return redirect(url_for('part_list'))
-    
-    print(form.school.data)
-
     return render_template('edit.html', form=form, user=user)
 
-# Delete Participant Page
 @app.route('/delete/<int:id>')
 def delete(id):
     user = Participant.query.get_or_404(id)
@@ -298,7 +267,6 @@ def delete(id):
     flash("User Deleted Successfully")
     return redirect(url_for('part_list'))
 
-# Custom Error Pages
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template("404.html"), 404
@@ -307,6 +275,27 @@ def page_not_found(e):
 def page_not_found(e):
     return render_template("500.html"), 500
 
+# Google OAuth Routes
+@app.route('/google_login')
+def google_login():
+    google = oauth.create_client('google')
+    redirect_uri = url_for('google_authorize', _external=True)
+    return google.authorize_redirect(redirect_uri)
+
+@app.route('/google_authorize')
+def google_authorize():
+    google = oauth.create_client('google')
+    token = google.authorize_access_token()
+    user_info = google.get('userinfo').json()
+    user = Users.query.filter_by(email=user_info['email']).first()
+    if user is None:
+        user = Users(username=user_info['email'], email=user_info['email'])
+        db.session.add(user)
+        db.session.commit()
+    login_user(user)
+    session['profile'] = user_info
+    session.permanent = True
+    return redirect(url_for('dashboard'))
 
 # RESTful API Resources for Users
 class UserResource(Resource):
@@ -339,7 +328,6 @@ class UserResource(Resource):
             'message': 'User deleted successfully'
         }
 
-
 class UserListResource(Resource):
     def get(self):
         users = Users.query.all()
@@ -355,17 +343,12 @@ class UserListResource(Resource):
     def post(self):
         data = request.get_json()
         hashed_pw = generate_password_hash(data['password'], "pbkdf2:sha256")
-        new_user = Users(
-            username=data['username'],
-            email=data['email'],
-            password_hash=hashed_pw
-        )
+        new_user = Users(username=data['username'], email=data['email'], password_hash=hashed_pw)
         db.session.add(new_user)
         db.session.commit()
         return {
             'message': 'User created successfully'
         }, 201
-
 
 # RESTful API Resources for Participants
 class ParticipantResource(Resource):
@@ -403,7 +386,6 @@ class ParticipantResource(Resource):
             'message': 'Participant deleted successfully'
         }
 
-
 class ParticipantListResource(Resource):
     def get(self):
         participants = Participant.query.all()
@@ -434,7 +416,6 @@ class ParticipantListResource(Resource):
         return {
             'message': 'Participant created successfully'
         }, 201
-
 
 # Register API Resources
 api.add_resource(UserResource, '/api/users/<int:user_id>')

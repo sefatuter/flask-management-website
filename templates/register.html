@@ -37,6 +37,9 @@
                 <br>
                 {{ form.submit(class="btn btn-secondary") }}
             </form>
+            <a type="button" class="login-with-google-btn" href="{{ url_for('google_login') }}" >
+                Sign Up with Google
+              </a>
         </div>
     </div>
 {% endif %}
