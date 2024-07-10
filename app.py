@@ -279,23 +279,48 @@ def page_not_found(e):
 @app.route('/google_login')
 def google_login():
     google = oauth.create_client('google')
-    redirect_uri = url_for('google_authorize', _external=True)
+    redirect_uri = url_for('google_login_authorize', _external=True)
     return google.authorize_redirect(redirect_uri)
 
-@app.route('/google_authorize')
-def google_authorize():
+@app.route('/google_register')
+def google_register():
+    google = oauth.create_client('google')
+    redirect_uri = url_for('google_register_authorize', _external=True)
+    return google.authorize_redirect(redirect_uri)
+
+@app.route('/google_login_authorize')
+def google_login_authorize():
     google = oauth.create_client('google')
     token = google.authorize_access_token()
     user_info = google.get('userinfo').json()
     user = Users.query.filter_by(email=user_info['email']).first()
     if user is None:
-        user = Users(username=user_info['email'], email=user_info['email'])
-        db.session.add(user)
-        db.session.commit()
+        flash("No account found. Please register first.", "warning")
+        return redirect(url_for('register'))
     login_user(user)
     session['profile'] = user_info
     session.permanent = True
+    flash("Login successful.", "success")
     return redirect(url_for('dashboard'))
+
+@app.route('/google_register_authorize')
+def google_register_authorize():
+    google = oauth.create_client('google')
+    token = google.authorize_access_token()
+    user_info = google.get('userinfo').json()
+    user = Users.query.filter_by(email=user_info['email']).first()
+    if user is not None:
+        flash("Account already exists. Please log in.", "warning")
+        return redirect(url_for('login'))
+    user = Users(username=user_info['email'], email=user_info['email'], password_hash="googleUser")
+    db.session.add(user)
+    db.session.commit()
+    login_user(user)
+    session['profile'] = user_info
+    session.permanent = True
+    flash("Registration successful.", "success")
+    return redirect(url_for('dashboard'))
+
 
 # RESTful API Resources for Users
 class UserResource(Resource):
