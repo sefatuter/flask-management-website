@@ -264,8 +264,16 @@ def delete(id):
     user = Participant.query.get_or_404(id)
     db.session.delete(user)
     db.session.commit()
-    flash("User Deleted Successfully")
+    flash("Participant Deleted Successfully")
     return redirect(url_for('part_list'))
+
+@app.route('/delete/user/<int:id>')
+def delUser(id):
+    user = Users.query.get_or_404(id)
+    db.session.delete(user)
+    db.session.commit()
+    flash("User Deleted Successfully")
+    return redirect(url_for('login'))
 
 @app.errorhandler(404)
 def page_not_found(e):
