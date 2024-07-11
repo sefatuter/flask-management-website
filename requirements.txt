@@ -54,14 +54,11 @@ pyasn1==0.6.0
 pyasn1_modules==0.4.0
 pycparser==2.22
 Pygments==2.18.0
-pycodestyle==2.5.0
-pyflakes==2.1.1
 PyMySQL==1.1.1
 pyparsing==3.1.2
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
 pytz==2024.1
-pywin32==306
 pyzmq==26.0.3
 requests==2.32.3
 requests-oauthlib==1.1.0
@@ -77,5 +74,5 @@ typing_extensions==4.12.2
 urllib3==2.2.2
 wcwidth==0.2.13
 webencodings==0.5.1
-Werkzeug==2.2.2
+Werkzeug>=3.0.0
 WTForms==3.1.2

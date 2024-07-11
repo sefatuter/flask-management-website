@@ -1,3 +1,7 @@
+import os
+import time
+import pymysql
+from dotenv import load_dotenv
 from flask import Flask, render_template, flash, request, redirect, url_for, jsonify, session
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, PasswordField, BooleanField, ValidationError, SelectField
@@ -10,8 +14,6 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta
 from flask_restful import Resource, Api
 from authlib.integrations.flask_client import OAuth
-import os
-from dotenv import load_dotenv
 
 # dotenv setup
 load_dotenv()
@@ -20,13 +22,27 @@ load_dotenv()
 app = Flask(__name__)
 api = Api(app)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:mysql1234@localhost/conf_users'
-# Secret Key
+# Configurations
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:mysql1234@db:3306/conf_users'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = os.getenv("APP_SECRET_KEY")
 app.config['SESSION_COOKIE_NAME'] = 'google-login-session'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=5)
 
-db = SQLAlchemy(app)
+# Retry mechanism
+MAX_RETRIES = 5
+for _ in range(MAX_RETRIES):
+    try:
+        # Initialize the database connection
+        db = SQLAlchemy(app)
+        break
+    except pymysql.err.OperationalError as e:
+        print(f"Database connection failed: {e}")
+        time.sleep(5)
+else:
+    print("Could not connect to the database. Exiting.")
+    exit(1)
+
 migrate = Migrate(app, db)
 
 # Flask Login Stuff
@@ -457,4 +473,4 @@ api.add_resource(ParticipantResource, '/api/participant/<int:participant_id>')
 api.add_resource(ParticipantListResource, '/api/participants')
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000)
