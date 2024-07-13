@@ -11,7 +11,7 @@ services:
       - APP_SECRET_KEY=${APP_SECRET_KEY}
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
-      - SQLALCHEMY_DATABASE_URI=mysql+pymysql://root:mysql1234@db:3307/conf_users
+      - SQLALCHEMY_DATABASE_URI=mysql+pymysql://root:mysql1234@db:3306/conf_users
     volumes:
       - .:/app
     depends_on:
