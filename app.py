@@ -1,6 +1,4 @@
 import os
-import time
-import pymysql
 from dotenv import load_dotenv
 from flask import Flask, render_template, flash, request, redirect, url_for, jsonify, session
 from flask_wtf import FlaskForm
@@ -22,26 +20,14 @@ load_dotenv()
 app = Flask(__name__)
 api = Api(app)
 
-# Configurations
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:mysql1234@db:3306/conf_users'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:mysql1234@localhost/conf_users'
+# Secret Key
 app.config['SECRET_KEY'] = os.getenv("APP_SECRET_KEY")
 app.config['SESSION_COOKIE_NAME'] = 'google-login-session'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=5)
 
-# Retry mechanism
-MAX_RETRIES = 5
-for _ in range(MAX_RETRIES):
-    try:
-        # Initialize the database connection
-        db = SQLAlchemy(app)
-        break
-    except pymysql.err.OperationalError as e:
-        print(f"Database connection failed: {e}")
-        time.sleep(5)
-else:
-    print("Could not connect to the database. Exiting.")
-    exit(1)
+
+db = SQLAlchemy(app)
 
 migrate = Migrate(app, db)
 
@@ -473,4 +459,4 @@ api.add_resource(ParticipantResource, '/api/participant/<int:participant_id>')
 api.add_resource(ParticipantListResource, '/api/participants')
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(debug=True)
