@@ -11,7 +11,6 @@ is ensured by using Google OAuth system
 ## Installation
 
 1. Clone the repository:
-    bash
 ```
 git clone https://github.com/sefatuter/flask-management-website.git
 ```
@@ -22,7 +21,7 @@ cd flask-management-website
 python -m venv venv
 ```
 
-3. Install the required packages, run setup script:
+3. Install the required packages:
      bash
 ```
 pip install -r requirements.txt
