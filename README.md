@@ -1,50 +1,82 @@
-# Registration System
+# Flask Registration System
+
+## Web application designed to manage and streamline organizational tasks with a robust interface. Technologies Used: Python, Flask, HTML,
+CSS, JavaScript, SQLAlchemy, Jinja2
+
+● Implements a secure login system to ensure user data privacy and protection against unauthorized access. Registration and login security
+is ensured by using Google OAuth system
+
+● Features an admin panel that allows for efficient oversight and administration of user roles and permissions.
+
+## Installation
+
+1. Clone the repository:
+    bash
+```
+git clone https://github.com/sefatuter/flask-management-website.git
+```
+
+2. Navigate to the project directory, create virtual environment and activate:
+```
+cd flask-management-website
+python -m venv venv
+```
+
+3. Install the required packages, run setup script:
+     bash
+```
+pip install -r requirements.txt
+```
+
+4. Run App
+```
+flask run
+```
+
+5. Go to ```http://localhost:5000```
+
+
+## Docker container
+
+``` docker pull usersefa/flask-management-system ```
+``` docker build -t myflaskapp . ```
+``` docker run -d -p 5000:5000 myflaskapp ```
 
 ## Home
 
-![home](https://github.com/sefatuter/flask-management-website/assets/95074982/f5584d41-97b1-4b21-a5b4-fc793e51228b)
+![1](https://github.com/user-attachments/assets/cce061eb-a31c-47f9-8f79-9ac3c8f35208)
 
 ## Login
 
-![login](https://github.com/sefatuter/flask-management-website/assets/95074982/624a3cdd-d4d9-49e6-a8f8-1c6bbead8c99)
+![2](https://github.com/user-attachments/assets/6ec1a086-159a-45e9-ac0c-fa1e8dbde3a7)
 
 ## Register
 
-![register](https://github.com/sefatuter/flask-management-website/assets/95074982/4303ecab-f026-40dd-9622-e713c1de3c5a)
+![3](https://github.com/user-attachments/assets/dc6c3618-7f50-4a50-bd4a-478cdb0342d5)
 
 ## Main
 
-![main](https://github.com/sefatuter/flask-management-website/assets/95074982/4df7f302-c3e6-44bc-8edb-332f13434829)
+![4](https://github.com/user-attachments/assets/16703a94-d97d-4fc6-adff-f4d47da67cef)
 
 ## Admin Panel
 
-![admin panel](https://github.com/sefatuter/flask-management-website/assets/95074982/eac74efb-4861-4bdb-92de-baaab3a3690e)
-
-## List
-
-![list](https://github.com/sefatuter/flask-management-website/assets/95074982/4e0299d5-dff8-4692-9a33-6dc7c837bbbc)
+![5](https://github.com/user-attachments/assets/d31bf050-7388-4442-be43-9214369c9ee9)
 
 ## Add User
 
-![add_user](https://github.com/sefatuter/flask-management-website/assets/95074982/3fc1cdb9-6197-469f-8463-c3d2ab86c2f5)
+![6](https://github.com/user-attachments/assets/9dd5bdb9-d07f-4bc8-9635-8e387d6591e9)
+
+![7](https://github.com/user-attachments/assets/a1a90194-8e3f-4d32-baba-a8634338e9c1)
+
+![8](https://github.com/user-attachments/assets/d277e9b5-0436-435f-bcbf-9b8900768102)
 
 ## Dashboard
 
-![dashboard](https://github.com/sefatuter/flask-management-website/assets/95074982/8dcfe4d9-3454-40f3-98c9-40ddf5256982)
-
-## Dashboard Edit
-
-![dashboard_update](https://github.com/sefatuter/flask-management-website/assets/95074982/cdd929af-5af3-40e8-b4ec-6ace6c1bb4cd)
-
-## User Update
-
-![user_update](https://github.com/sefatuter/flask-management-website/assets/95074982/5e6fd224-9183-406f-95be-4b283c282f8f)
-
+![9](https://github.com/user-attachments/assets/283f0fe8-35e5-4fc0-a945-7680a6761b45)
 
 # API Documentation:
 
 ### Base URL:  ```http://localhost:5000/api```
-
 
 
 * For Users:
