@@ -1,6 +1,6 @@
 # Flask Registration System
 
-## Web application designed to manage and streamline organizational tasks with a robust interface. Technologies Used: Python, Flask, HTML,
+Web application designed to manage and streamline organizational tasks with a robust interface. Technologies Used: Python, Flask, HTML,
 CSS, JavaScript, SQLAlchemy, Jinja2
 
 ● Implements a secure login system to ensure user data privacy and protection against unauthorized access. Registration and login security
