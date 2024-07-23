@@ -20,8 +20,12 @@ load_dotenv()
 app = Flask(__name__)
 api = Api(app)
 
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:mysql1234@localhost/conf_users'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:mysql1234@db:3306/conf_users'
+# !For local running
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:mysql1234@localhost/conf_users'
+
+# !For docker running
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:mysql1234@db:3306/conf_users'
+
 # Secret Key
 app.config['SECRET_KEY'] = os.getenv("APP_SECRET_KEY")
 app.config['SESSION_COOKIE_NAME'] = 'google-login-session'

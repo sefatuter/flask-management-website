@@ -3,4 +3,4 @@ __pycache__
 .env
 client_secret.json
 migrationDock.txt
-./data_csv
+.migrations
