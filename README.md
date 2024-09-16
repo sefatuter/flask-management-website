@@ -39,8 +39,6 @@ flask run
 
 ``` docker pull usersefa/flask-management-system ```
 
-``` docker build -t myflaskapp . ```
-
 ``` docker run -d -p 5000:5000 myflaskapp ```
 
 ## Home
